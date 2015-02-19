@@ -6,7 +6,7 @@
 
   In the last ten years there has been a proliferation of relatively inexpensive wearable sensors such as Jawbone Up, Nike FuelBand, and Fitbit. In Human Activity Recognition (HAR) wearable sensors are used to determine patterns in human activity. For example, with wearable sensors, HAR can monitor daily activity for medical diagnosis and rehabilitation, and encourage people to adopt a healthy lifestyle. [Tessendorf, et. al., 2011](http://www.researchgate.net/profile/Bert_Arnrich/publication/235834654_An_IMU-based_Sensor_Network_to_Continuously_Monitor_Rowing_Technique_on_the_Water/links/02bfe513f51a0d82d2000000.pdf) and [Velloso, et. al., 2013]( https://www.andreas-bulling.de/fileadmin/docs/velloso13_ah.pdf)  have described a new paradigm, not just monitoring the quantity of activity, but the quality of the activity. This is directly applicable to sports, where "quality recognition" could be used to supply feedback on performance and technique to the athlete or coach.  
   
-[Velloso, et. Al., 2013]( https://www.andreas-bulling.de/fileadmin/docs/velloso13_ah.pdf)  looked at qualitative activity recognition in a weight Lifting task, the single arm dumbbell biceps curl. They placed sensors on a glove and upper arm band worn on the lifting arm. Sensors were also placed on a lumbar lifting belt and one head of the dumbbell.  Six subjects performed sets of bicep curls under five different conditions:  
+[Velloso, et. al., 2013]( https://www.andreas-bulling.de/fileadmin/docs/velloso13_ah.pdf)  looked at qualitative activity recognition in a weight Lifting task, the single arm dumbbell biceps curl. They placed sensors on a glove and upper arm band worn on the lifting arm. Sensors were also placed on a lumbar lifting belt and one head of the dumbbell.  Six subjects performed sets of bicep curls under five different conditions:  
 Class A - normal "gold standard" lift  
 Class B - throwing the elbows to the front  
 Class C - lifting the weight only half way  
@@ -16,7 +16,7 @@ Class E - throwing the hips forward
 Classes B through E simulated poor form in performing the lift. The authors demonstrated that they could detect a small number of mistakes in technique using wearable sensors and standard pattern recognition techniques.
   
     
-Velloso, et. Al., 2013 made their sensor data [publically available](http://groupware.les.inf.puc-rio.br/har) along with the class of the lift performed (their variable "classe".) I used this data to develop a model that classifies the biceps curl based on the sensor data. First I cleaned and explored the data. Then I tested three models. Finally I used my best model to predict the class of test cases.
+Velloso, et. al., 2013 made their sensor data [publically available](http://groupware.les.inf.puc-rio.br/har) along with the class of the lift performed (their variable "classe".) I used this data to develop a model that classifies the biceps curl based on the sensor data. First I cleaned and explored the data. Then I tested three models. Finally I used my best model to predict the class of test cases.
   
 ```{r prelims, message=FALSE, warning=FALSE, echo=TRUE}
 options(warn = -1)  
@@ -141,9 +141,9 @@ confusionMatrix(pnb, testing$classe)$overall[1:2]
   
 ####Random Forest  
   
-For my last model decided to try a random forest. During "play" I found that using the function randomForest() was much faster than using the caret train() wrapper.  [Random forest doesn't require cross-validation]( http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr). The out-of-bag (OOB) error is an unbiased estimate of the classification error as trees are added to the forest. I decided to cross-validate with the testing set out of fear (irrational perhaps!) of over-fitting. The OOB classification error of my model was 0.53%. The out of sample error was 0.42%; showing that cross-validation really wasn't needed.   
+For my last model I decided to try a random forest. During "play" I found that using the function randomForest() was much faster than using the caret train() wrapper.  [Random forest doesn't require cross-validation]( http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr). The out-of-bag (OOB) error is an unbiased estimate of the classification error as trees are added to the forest. I decided to cross-validate with the testing set out of fear (irrational perhaps!) of over-fitting. The OOB classification error of my model was 0.53%. The out of sample error was 0.42%; showing that cross-validation really wasn't needed.   
   
-I list the 20 most important features in my "black box" random forest model and plot them in Figure 2. It's a little surprising that three of the top five features were sensors on the belt, not on the forearm or dumbbell. The error rates for the different classes, reached their minimums after approximately 100 trees, Figure 3. The smallest errors were for the ideal biceps curl and the curl with hips forward (Class E). An overlaid density plot for the top 8 features shows that there doesn't appear to be simple separability of classes, except perhaps for pitch forearm and roll forearm, Figure 4. 
+I list the 20 most important features in my "black box" random forest model and plot them in Figure 2. It's surprising that three of the top five features were sensors on the belt, not on the forearm or dumbbell. The error rates for the different classes, reached their minimums after approximately 100 trees, Figure 3. The smallest errors were for the ideal biceps curl (Class A) and the curl with hips forward (Class E). An overlaid density plot for the top 8 features shows that there doesn't appear to be simple separability of classes, except perhaps for pitch forearm and roll forearm, Figure 4. 
 
   
 ```{r randomForest}
