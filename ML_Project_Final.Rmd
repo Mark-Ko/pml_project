@@ -113,21 +113,10 @@ hicorr <- findCorrelation(cor(training[,-53]), cutoff = 0.85)
 colnames(training[hicorr])
 ```  
  
-####Recursive Regression Tree  
-  
-For my first model I used recursive regression tree partitioning with "rpart" in caret. I used 7- fold cross validation. The final model consisted of four features. The accuracy of the model on the test set was 0.49, roughly the same as random guessing.  
-   
-```{r tree, message=FALSE, warning=FALSE}
-modtree <- train(classe ~ ., method = "rpart", data = training, 
-                 trControl=trainControl(method="cv", number=7))
-print(modtree$finalModel)
-ptree <- predict(modtree, newdata = testing)
-confusionMatrix(ptree, testing$classe)$overall[1:2]
-```
   
 ####Naive Bayes  
   
-I next tried a naive Bayes model with "nb" in caret. Again I used 7-fold cross validation. The accuracy on the test set was 0.7395 (out of sample error of 26.05%), better than my regression tree model, but still not accurate enough.  
+I first tried a naive Bayes model with "nb" in caret. I used 7-fold cross validation. The accuracy on the test set was 0.7395 (**out of sample error of 26.05%**.) This wasn't accurate enough.  
 
   
 ```{r nb, message=FALSE, warning=FALSE}
@@ -137,11 +126,24 @@ pnb <- predict(modnb, testing)
 confusionMatrix(pnb, testing$classe)$table
 confusionMatrix(pnb, testing$classe)$overall[1:2]
 ```
+  
+####Gradient Boosting with Trees  
+  
+For my next model I tried gradient boosting with "gbm" in caret. I used 7-fold cross validation. The accuracy on the test set was impressive, 0.9664 (**out of sample error of 3.36%**.) This model was quite an improvement over naive Bayes.
+  
+```{r gbm, message=FALSE, warning=FALSE}
+modgbm <- train(classe ~ ., method = "gbm", data = training, 
+                 trControl=trainControl(method="cv", number=7), verbose = FALSE)
+pgbm <- predict(modgbm, testing)
+print(modgbm$finalModel)
+confusionMatrix(pgbm, testing$classe)$table
+confusionMatrix(pgbm, testing$classe)$overall[1:2]
+```
 
   
 ####Random Forest  
   
-For my last model I decided to try a random forest. During "play" I found that using the function randomForest() was much faster than using the caret train() wrapper.  [Random forest doesn't require cross-validation]( http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr). The out-of-bag (OOB) error is an unbiased estimate of the classification error as trees are added to the forest. I decided to cross-validate with the testing set out of fear (irrational perhaps!) of over-fitting. The OOB classification error of my model was 0.53%. The out of sample error was 0.42%; showing that cross-validation really wasn't needed.   
+For my last model I decided to try a random forest. During "play" I found that using the function randomForest() was much faster than using the caret train() wrapper.  [Random forest doesn't require cross-validation]( http://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr). The out-of-bag (OOB) error is an unbiased estimate of the classification error as trees are added to the forest. I decided to cross-validate with the testing set out of fear (irrational perhaps!) of over-fitting. The OOB classification error of my model was 0.53%. **The out of sample error was 0.42%**; showing that cross-validation really wasn't needed.   
   
 I list the 20 most important features in my "black box" random forest model and plot them in Figure 2. It's surprising that three of the top five features were sensors on the belt, not on the forearm or dumbbell. The error rates for the different classes, reached their minimums after approximately 100 trees, Figure 3. The smallest errors were for the ideal biceps curl (Class A) and the curl with hips forward (Class E). An overlaid density plot for the top 8 features shows that there doesn't appear to be simple separability of classes, except perhaps for pitch forearm and roll forearm, Figure 4. 
 
@@ -181,7 +183,7 @@ featurePlot(x = testing[,index[1:8]], y = testing$classe, plot = "density",
 
 ###Conclusion  
   
-I was able to predict the "quality" of a dumbbell curl. My random forest model was surprisingly accurate, 99.58% on the cross-validation testing set. Recursive regression tree partitioning was disappointing as was naive Bayes. For the top features, the probability density functions of the classes were similar and didn't appear easily separable. This may have contributed to the poor performance of those two methods. Based  on the biomechanics of the system, I would expect some sensor variables to be coupled, thus dependent, a violation of the "naive" assumption. This may explain the performance of the naive Bayes classifier.  
+I was able to predict the *quality* of a dumbbell curl. My random forest model was surprisingly accurate, 99.58% on the cross-validation testing set. Naive Bayes was disappointing. For the top features, the probability density functions of the classes were similar and didn't appear easily separable. Also, based on the biomechanics of the system, I would expect some sensor variables to be coupled, thus dependent, a violation of the "naive" assumption. This may explain the poor performance of the naive Bayes classifier.  
 
 
 ###Addendum - The Test Cases  
